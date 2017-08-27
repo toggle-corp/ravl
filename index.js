@@ -7,11 +7,16 @@ const { schemaContainer } = require('./schema');
 {
   const name = 'district';
   const schema = {
+    doc: {
+      name: 'District',
+      description: `User type containing information related  a district.`,
+      note: 'A district can be assigned with one more officer if required.',
+    },
     fields: {
       id: { type: 'number', required: true },
       name: { type: 'string', required: true },
       description: { type: 'string', required: false },
-      managerAssigned: { type: 'manager', required: false },
+      officerAssigned: { type: 'officer', required: false },
     },
     validator: (self, context) => {
       if (isFalsy(self.description)) {
@@ -28,11 +33,16 @@ const { schemaContainer } = require('./schema');
   schemaContainer.setSchema(name, schema);
 }
 {
-  const name = 'manager';
+  const name = 'officer';
   const schema = {
+    doc: {
+      name: 'District Officer',
+      description: `User type containing information related an officer.`,
+    },
     fields: {
       id: { type: 'uint', required: true },
       name: { type: 'string', required: false },
+      wards: { type: 'array.string', required: true },
     },
   };
   schemaContainer.setSchema(name, schema);
@@ -55,8 +65,38 @@ try {
   schemaContainer.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
   schemaContainer.validate({ id: 12, name: 'kaski' }, 'district');
 
-  const schema = schemaContainer.getSchemaExpanded('district');
-  console.log(JSON.stringify(schema, null, 2));
+  const elems = [
+    { type: 'int', level: 1, example: true },
+    { type: 'uint', level: 1, example: true },
+    { type: 'email', level: 1, example: true },
+    { type: 'district', level: 2 },
+    { type: 'officer', level: 3 },
+    // 'array.array.officer',
+    // 'array.array.uint',
+  ];
+  const surroundBacktick = a => `\`${a}\``;
+  for (const elem of elems) {
+    const schemaEx = schemaContainer.getSchemaExpanded(elem.type);
+    const schema = schemaContainer.getSchema(elem.type);
+    if (schema && schema.doc) {
+      console.log(`${'#'.repeat(elem.level)} ${schema.doc.name}`);
+      if (schema.doc.description) {
+        console.log(schema.doc.description);
+      }
+      if (elem.example && schema.doc.example) {
+        console.log(`Example: ${schema.doc.example.map(surroundBacktick).join(', ')}`);
+      }
+      if (schemaEx) {
+        console.log(`\`\`\`javascript\n${schemaEx}\n\`\`\``);
+      }
+      if (schema.doc.note) {
+        console.log(`> ${schema.doc.note}`);
+      }
+      console.log();
+    } else {
+      // for arrays
+    }
+  }
 } catch (ex) {
   if (ex instanceof RavlError) {
     console.log(ex.message);

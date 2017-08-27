@@ -18,6 +18,10 @@ class SchemaContainer {
     basicTypes.forEach((basicType) => {
       const type = basicType.toLowerCase();
       this.schemas[type] = {
+        doc: {
+          name: basicType,
+          description: `Basic type representing ${type}`,
+        },
         validator: SchemaContainer.createValidator(type),
       };
     });
@@ -94,16 +98,28 @@ class SchemaContainer {
     }
   }
 
-  _newMemory() {
-    this.memory = new Set();
-  }
-
   validate(object, type) {
     this._validate(object, type, type);
   }
 
   // TODO: cache this
-  _getSchemaExpanded(type) {
+  _getSchemaExpanded(type, level) {
+    const tab = '    ';
+    const tabLevel = tab.repeat(level);
+    const tabLevel1 = tab.repeat(level + 1);
+    const ARRAY_SUFFIXED = 'array.';
+
+    // If type starts with 'array.'
+    if (type.startsWith(ARRAY_SUFFIXED)) {
+      const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
+      let schemaForSubType = this._getSchemaExpanded(subType, level + 1);
+      if (isFalsy(schemaForSubType)) {
+        schemaForSubType = `${tabLevel1}'${subType}',`;
+      }
+      return `${tabLevel}[\n${schemaForSubType}\n${tabLevel}]`;
+    }
+
+    // Else if
     const schema = this.getSchema(type);
     if (isFalsy(schema)) {
       throw new RavlError(401, 'Type is not defined');
@@ -111,24 +127,23 @@ class SchemaContainer {
     if (isFalsy(schema.fields)) {
       return undefined;
     }
-    const documentation = {};
-    for (const fieldName in schema.fields) {
+
+    let doc = `${tabLevel}{`;
+    Object.keys(schema.fields).forEach((fieldName) => {
       const field = schema.fields[fieldName];
-      const schemaForField = this._getSchemaExpanded(field.type);
+      let schemaForField = this._getSchemaExpanded(field.type, level + 1);
       if (isFalsy(schemaForField)) {
-        documentation[fieldName] = field;
+        schemaForField = ` '${field.type}'`;
       } else {
-        documentation[fieldName] = {
-          type: schemaForField,
-          required: field.required,
-        };
+        schemaForField = `\n${schemaForField}`;
       }
-    }
-    return documentation;
+      doc += `\n${tabLevel1}${fieldName}:${schemaForField},${field.required ? '    // required' : ''}`;
+    });
+    return `${doc}\n${tabLevel}}`;
   }
 
   getSchemaExpanded(type) {
-    return this._getSchemaExpanded(type);
+    return this._getSchemaExpanded(type, 0);
   }
 }
 
@@ -138,6 +153,11 @@ const schemaContainer = new SchemaContainer();
 {
   const type = 'email';
   const schema = {
+    doc: {
+      name: 'Email',
+      description: `Basic type which denotes a valid email.`,
+      example: ['johndoe@email.com', 'hariprasad@emailer.com'],
+    },
     validator: (self, context) => {
       if (!isValidEmail(self)) {
         throw new RavlError(401, 'Value is not a valid email', context);
@@ -150,6 +170,11 @@ const schemaContainer = new SchemaContainer();
 {
   const type = 'int';
   const schema = {
+    doc: {
+      name: 'Integer',
+      description: `Basic type which denotes a number without decimal parts.`,
+      example: [1, 2, 10, -12, 11, 0],
+    },
     validator: (self, context) => {
       if (!isValidInteger(self)) {
         throw new RavlError(401, 'Value is not a valid integer', context);
@@ -162,6 +187,11 @@ const schemaContainer = new SchemaContainer();
 {
   const type = 'uint';
   const schema = {
+    doc: {
+      name: 'Unsigned Integer',
+      description: `Basic type which denotes a positive integer.`,
+      example: [1, 2, 10, 11, 0],
+    },
     validator: (self, context) => {
       if (!isValidInteger(self) || self < 0) {
         throw new RavlError(401, 'Value is not a valid unsigned integer', context);
@@ -173,12 +203,15 @@ const schemaContainer = new SchemaContainer();
 
 module.exports.schemaContainer = schemaContainer;
 
-const documentation = {
+// TODO
+/*
+const doc = {
+  description: '', // DONE
+  note: '', // DONE
+
   hidden: false,
-  description: '',
-  comment: '',
   tags: [],
   example: [], // can be put for only basic types
 };
-
 // fake data generator
+*/

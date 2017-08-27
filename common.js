@@ -38,7 +38,7 @@ const isValidEmail = (value) => {
   return re.test(value);
 };
 
-const isValidInteger = (value) => (
+const isValidInteger = value => (
   typeOf(value) === 'number' && value % 1 === 0
 );
 
