@@ -13,7 +13,8 @@ const { schemaContainer } = require('./schema');
       note: 'A district can be assigned with one more officer if required.',
     },
     fields: {
-      id: { type: 'number', required: true },
+      id: { type: 'uint', required: true },
+      index: { type: 'number', required: false },
       name: { type: 'string', required: true },
       description: { type: 'string', required: false },
       officerAssigned: { type: 'officer', required: false },
@@ -65,6 +66,9 @@ try {
   schemaContainer.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
   schemaContainer.validate({ id: 12, name: 'kaski' }, 'district');
 
+  console.log(schemaContainer.getValues('district'));
+
+  /*
   const elems = [
     { type: 'int', level: 1, example: true },
     { type: 'uint', level: 1, example: true },
@@ -97,6 +101,8 @@ try {
       // for arrays
     }
   }
+    */
+
 } catch (ex) {
   if (ex instanceof RavlError) {
     console.log(ex.message);

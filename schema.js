@@ -1,6 +1,23 @@
 const { RavlError } = require('./error');
 const { basicTypes, typeOf, isTruthy, isFalsy, isValidEmail, isValidInteger } = require('./common');
 
+const getRandomFromList = items => (
+  items[Math.floor(Math.random() * items.length)]
+);
+
+const examples = {
+  Boolean: [true, false],
+  Number: [1, 3, 4, 5, 6, 0, -1, -2, -3, -4, -10, -11, -10.12, 11.2121, 1298.432, 432.342, -23819.12, 3213, 23.21],
+  String: ['ram', 'shyam', 'hari', 'home', 'city', 'long text', 'ankit', 'placeholder'],
+  // 'Function',
+  // 'Array',
+  // 'Date',
+  // 'RegExp',
+  // 'Object',
+  // 'Error',
+  // 'Symbol',
+};
+
 class SchemaContainer {
   static createValidator(type) {
     return (self, context) => {
@@ -21,6 +38,7 @@ class SchemaContainer {
         doc: {
           name: basicType,
           description: `Basic type representing ${type}`,
+          example: examples[basicType],
         },
         validator: SchemaContainer.createValidator(type),
       };
@@ -102,6 +120,38 @@ class SchemaContainer {
     this._validate(object, type, type);
   }
 
+  getValues(type) {
+    const ARRAY_SUFFIXED = 'array.';
+
+    // If type starts with 'array.'
+    if (type.startsWith(ARRAY_SUFFIXED)) {
+      const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
+      const valueForSubtype = this.getValues(subType);
+      return [valueForSubtype];
+    }
+
+    // Else if
+    const schema = this.getSchema(type);
+    if (isFalsy(schema)) {
+      throw new RavlError(401, 'Type is not defined');
+    }
+    if (isFalsy(schema.fields)) {
+      // this means this is a basic type
+      // TODO: check for doc to exits
+      return getRandomFromList(schema.doc.example);
+    }
+
+    const doc = {};
+    Object.keys(schema.fields).forEach((fieldName) => {
+      const field = schema.fields[fieldName];
+      console.log(field.type);
+      const valueForField = this.getValues(field.type);
+      // check required here
+      doc[fieldName] = valueForField;
+    });
+    return doc;
+  }
+
   // TODO: cache this
   _getSchemaExpanded(type, level) {
     const tab = '    ';
@@ -145,6 +195,7 @@ class SchemaContainer {
   getSchemaExpanded(type) {
     return this._getSchemaExpanded(type, 0);
   }
+
 }
 
 const schemaContainer = new SchemaContainer();
