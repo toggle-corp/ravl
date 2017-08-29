@@ -6,9 +6,17 @@ const getRandomFromList = items => (
 );
 
 const examples = {
-  Boolean: [true, false],
-  Number: [1, 3, 4, 5, 6, 0, -1, -2, -3, -4, -10, -11, -10.12, 11.2121, 1298.432, 432.342, -23819.12, 3213, 23.21],
-  String: ['ram', 'shyam', 'hari', 'home', 'city', 'long text', 'ankit', 'placeholder'],
+  boolean: [
+    true, false,
+  ],
+  number: [
+    1, 3, 4, 5, 6, 0, -1, -2, -3, -4, -10, -11, -10.12, 11.2121, 1298.432,
+    432.342, -23819.12, 3213, 23.21,
+  ],
+  string: [
+    'ram', 'shyam', 'hari', 'home', 'city', 'long text', 'ankit',
+    'placeholder',
+  ],
   // 'Function',
   // 'Array',
   // 'Date',
@@ -16,6 +24,15 @@ const examples = {
   // 'Object',
   // 'Error',
   // 'Symbol',
+  email: [
+    'johndoe@email.com', 'hariprasad@emailer.com', 'frozenhelium@toggle.com',
+  ],
+  int: [
+    1, 2, 10, -12, 11, 0,
+  ],
+  uint: [
+    1, 2, 10, 11, 0,
+  ],
 };
 
 class SchemaContainer {
@@ -38,7 +55,7 @@ class SchemaContainer {
         doc: {
           name: basicType,
           description: `Basic type representing ${type}`,
-          example: examples[basicType],
+          example: examples[type],
         },
         validator: SchemaContainer.createValidator(type),
       };
@@ -126,8 +143,12 @@ class SchemaContainer {
     // If type starts with 'array.'
     if (type.startsWith(ARRAY_SUFFIXED)) {
       const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
-      const valueForSubtype = this.getValues(subType);
-      return [valueForSubtype];
+      const opArray = [];
+      const count = Math.floor(Math.random() * 10);
+      for (let i = 0; i < count; i++) {
+        opArray.push(this.getValues(subType));
+      }
+      return opArray;
     }
 
     // Else if
@@ -144,10 +165,10 @@ class SchemaContainer {
     const doc = {};
     Object.keys(schema.fields).forEach((fieldName) => {
       const field = schema.fields[fieldName];
-      console.log(field.type);
-      const valueForField = this.getValues(field.type);
-      // check required here
-      doc[fieldName] = valueForField;
+      if (!isFalsy(field.required) || Math.random() > 0.1) {
+        const valueForField = this.getValues(field.type);
+        doc[fieldName] = valueForField;
+      }
     });
     return doc;
   }
@@ -207,7 +228,7 @@ const schemaContainer = new SchemaContainer();
     doc: {
       name: 'Email',
       description: `Basic type which denotes a valid email.`,
-      example: ['johndoe@email.com', 'hariprasad@emailer.com'],
+      example: examples.email,
     },
     validator: (self, context) => {
       if (!isValidEmail(self)) {
@@ -224,7 +245,7 @@ const schemaContainer = new SchemaContainer();
     doc: {
       name: 'Integer',
       description: `Basic type which denotes a number without decimal parts.`,
-      example: [1, 2, 10, -12, 11, 0],
+      example: examples.int,
     },
     validator: (self, context) => {
       if (!isValidInteger(self)) {
@@ -241,7 +262,7 @@ const schemaContainer = new SchemaContainer();
     doc: {
       name: 'Unsigned Integer',
       description: `Basic type which denotes a positive integer.`,
-      example: [1, 2, 10, 11, 0],
+      example: examples.uint,
     },
     validator: (self, context) => {
       if (!isValidInteger(self) || self < 0) {
@@ -253,16 +274,3 @@ const schemaContainer = new SchemaContainer();
 }
 
 module.exports.schemaContainer = schemaContainer;
-
-// TODO
-/*
-const doc = {
-  description: '', // DONE
-  note: '', // DONE
-
-  hidden: false,
-  tags: [],
-  example: [], // can be put for only basic types
-};
-// fake data generator
-*/

@@ -1,6 +1,6 @@
 // ERRORS
 const { RavlError } = require('./error');
-const { isFalsy, isTruthy, typeOf } = require('./common');
+const { isFalsy, typeOf } = require('./common');
 const { schemaContainer } = require('./schema');
 
 // Adding user defined schema
@@ -66,9 +66,6 @@ try {
   schemaContainer.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
   schemaContainer.validate({ id: 12, name: 'kaski' }, 'district');
 
-  console.log(schemaContainer.getValues('district'));
-
-  /*
   const elems = [
     { type: 'int', level: 1, example: true },
     { type: 'uint', level: 1, example: true },
@@ -79,7 +76,7 @@ try {
     // 'array.array.uint',
   ];
   const surroundBacktick = a => `\`${a}\``;
-  for (const elem of elems) {
+  elems.forEach((elem) => {
     const schemaEx = schemaContainer.getSchemaExpanded(elem.type);
     const schema = schemaContainer.getSchema(elem.type);
     if (schema && schema.doc) {
@@ -100,9 +97,9 @@ try {
     } else {
       // for arrays
     }
-  }
-    */
+  });
 
+  console.log(JSON.stringify(schemaContainer.getValues('district'), null, 2));
 } catch (ex) {
   if (ex instanceof RavlError) {
     console.log(ex.message);
