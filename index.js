@@ -24,10 +24,10 @@ const { schemaContainer } = require('./schema');
         return;
       }
       if (!typeOf(self.description) === 'string') {
-        throw new RavlError(401, 'Value must be of type \'string\'', context);
+        throw new RavlError('Value must be of type \'string\'', context);
       }
       if (self.description.length <= 5) {
-        throw new RavlError(401, 'Length must be greater than 5', context);
+        throw new RavlError('Length must be greater than 5', context);
       }
     },
   };
@@ -49,6 +49,7 @@ const { schemaContainer } = require('./schema');
   schemaContainer.setSchema(name, schema);
 }
 
+// VALIDATION EXAMPLE
 try {
   schemaContainer.validate('hari', 'string');
   schemaContainer.validate(false, 'boolean');
@@ -64,42 +65,7 @@ try {
   schemaContainer.validate('shyam@gmail.com', 'email');
   schemaContainer.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
   schemaContainer.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
-  schemaContainer.validate({ id: 12, name: 'kaski' }, 'district');
-
-  const elems = [
-    { type: 'int', level: 1, example: true },
-    { type: 'uint', level: 1, example: true },
-    { type: 'email', level: 1, example: true },
-    { type: 'district', level: 2 },
-    { type: 'officer', level: 3 },
-    // 'array.array.officer',
-    // 'array.array.uint',
-  ];
-  const surroundBacktick = a => `\`${a}\``;
-  elems.forEach((elem) => {
-    const schemaEx = schemaContainer.getSchemaExpanded(elem.type);
-    const schema = schemaContainer.getSchema(elem.type);
-    if (schema && schema.doc) {
-      console.log(`${'#'.repeat(elem.level)} ${schema.doc.name}`);
-      if (schema.doc.description) {
-        console.log(schema.doc.description);
-      }
-      if (elem.example && schema.doc.example) {
-        console.log(`Example: ${schema.doc.example.map(surroundBacktick).join(', ')}`);
-      }
-      if (schemaEx) {
-        console.log(`\`\`\`javascript\n${schemaEx}\n\`\`\``);
-      }
-      if (schema.doc.note) {
-        console.log(`> ${schema.doc.note}`);
-      }
-      console.log();
-    } else {
-      // for arrays
-    }
-  });
-
-  console.log(JSON.stringify(schemaContainer.getValues('district'), null, 2));
+  schemaContainer.validate({ id: 2, name: 'kaski', wards: ['hari', 'shyam'] }, 'officer');
 } catch (ex) {
   if (ex instanceof RavlError) {
     console.log(ex.message);
@@ -107,3 +73,50 @@ try {
     throw ex;
   }
 }
+
+// FORMATTED_SCHEMA & INSTANCE EXAMPLE
+const elems = [
+  { type: 'int', level: 1, example: true },
+  { type: 'uint', level: 1, example: true },
+  { type: 'email', level: 1, example: true },
+  { type: 'district', level: 2 },
+  { type: 'officer', level: 3 },
+];
+let op = '';
+elems.forEach((elem) => {
+  const schema = schemaContainer.getSchema(elem.type);
+  const schemaEx = schemaContainer.getFormattedSchema(elem.type);
+  const schemaEg = JSON.stringify(schemaContainer.getInstance(elem.type), null, 2);
+
+  if (schema && schema.doc) {
+    // Title
+    op += `${'#'.repeat(elem.level)} ${schema.doc.name}\n`;
+    // Description
+    if (schema.doc.description) {
+      op += `${schema.doc.description}\n`;
+    }
+    // Formatted Schema
+    if (schemaEx) {
+      op += `###### Schema\n\`\`\`javascript\n${schemaEx}\n\`\`\`\n`;
+    }
+    // Dynamic examples
+    if (schemaEg) {
+      op += `###### Example\n\`\`\`javascript\n${schemaEg}\n\`\`\`\n`;
+    }
+    /*
+      // Static examples
+      const surroundBacktick = a => `\`${a}\``;
+      if (elem.example && schema.doc.example) {
+        console.log(`Example: ${schema.doc.example.map(surroundBacktick).join(', ')}`);
+      }
+    */
+    // Note
+    if (schema.doc.note) {
+      op += `> ${schema.doc.note}\n`;
+    }
+    op += '\n';
+  } else {
+    // for arrays
+  }
+});
+console.log(op);

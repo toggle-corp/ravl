@@ -42,9 +42,14 @@ const isValidInteger = value => (
   typeOf(value) === 'number' && value % 1 === 0
 );
 
+const getRandomFromList = items => (
+  items[Math.floor(Math.random() * items.length)]
+);
+
 module.exports.isFalsy = isFalsy;
 module.exports.isTruthy = isTruthy;
 module.exports.basicTypes = basicTypes;
 module.exports.typeOf = typeOf;
 module.exports.isValidEmail = isValidEmail;
 module.exports.isValidInteger = isValidInteger;
+module.exports.getRandomFromList = getRandomFromList;
