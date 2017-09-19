@@ -7,13 +7,13 @@ const ARRAY_SUFFIXED = 'array.';
 const attachValidator = (container) => {
     const validate = (object, type, context = type) => {
         if (isFalsy(type)) {
-            throw new RavlError(401, 'Type is not defined', context);
+            throw new RavlError('Type is not defined', context);
         }
         // NOTE: If type starts with 'array.'
         if (type.startsWith(ARRAY_SUFFIXED)) {
             // NOTE: Lists are always required
             if (isFalsy(object)) {
-                throw new RavlError(401, `Value must be of type ${ARRAY}`, context);
+                throw new RavlError(`Value must be of type ${ARRAY}`, context);
             }
             // Validate as array
             validate(object, ARRAY, context);
@@ -27,7 +27,7 @@ const attachValidator = (container) => {
             // Get schema
             const schema = container.get(type);
             if (isFalsy(schema)) {
-                throw new RavlError(401, 'Schema is not defined', context);
+                throw new RavlError('Schema is not defined', context);
             }
             // Iterate over fields and validate them
             if (isTruthy(schema.fields)) {
@@ -37,7 +37,7 @@ const attachValidator = (container) => {
                     const subObject = object[fieldName];
                     const isSubObjectFalsy = isFalsy(subObject);
                     if (isSubObjectFalsy && field.required) {
-                        throw new RavlError(401, `Field '${fieldName}' is required`, context);
+                        throw new RavlError(`Field '${fieldName}' is required`, context);
                     } else if (!isSubObjectFalsy) {
                         validate(subObject, field.type, `${context} > ${fieldName}`);
                     }
@@ -53,7 +53,7 @@ const attachValidator = (container) => {
                 const fieldsInObject = isTruthy(object) ? Object.keys(object) : [];
                 const extraFields = fieldsInObject.filter(x => isFalsy(schema.fields[x]));
                 if (extraFields.length > 0) {
-                    throw new RavlError(401, `Extra field(s) present: '${extraFields}'`, context);
+                    throw new RavlError(`Extra field(s) present: '${extraFields}'`, context);
                 }
             }
         }
@@ -61,4 +61,4 @@ const attachValidator = (container) => {
     container.validate = validate; // eslint-disable-line
 };
 
-module.exports.default = attachValidator;
+module.exports = attachValidator;

@@ -1,9 +1,28 @@
 // ERRORS
 const { RavlError } = require('./error');
 const { isFalsy, typeOf } = require('./common');
-const { dict } = require('./schema');
+const dict = require('./schema');
+const attachValidator = require('./attachValidator');
+const attachExampleGenerator = require('./attachExampleGenerator');
+const attachSchemaGenerator = require('./attachSchemaGenerator');
 
-// Adding user defined schema
+// ATTACHING BEHAVIORS
+attachValidator(dict);
+attachExampleGenerator(dict);
+attachSchemaGenerator(dict);
+
+// ATTACHING USER DEFINED SCHEMAS
+{
+    const type = 'companyName';
+    const schema = {
+        doc: {
+            name: 'Company names',
+            description: 'Loads validator from string',
+            example: ['apple', 'microsoft', 'google', 'amazon'],
+        },
+    };
+    dict.put(type, schema);
+}
 {
     const name = 'district';
     const schema = {
@@ -43,7 +62,7 @@ const { dict } = require('./schema');
         fields: {
             id: { type: 'uint', required: true },
             name: { type: 'string', required: false },
-            wards: { type: 'array.string:dev', required: true },
+            wards: { type: 'array.string:company', required: true },
         },
     };
     dict.put(name, schema);

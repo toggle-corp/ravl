@@ -1,8 +1,5 @@
 const { RavlError } = require('./error');
 const Dict = require('./Dict').default;
-const attachValidator = require('./attachValidator').default;
-const attachExampleGenerator = require('./attachExampleGenerator').default;
-const attachSchemaGenerator = require('./attachSchemaGenerator').default;
 const {
     basicTypes,
     typeOf,
@@ -11,9 +8,6 @@ const {
 } = require('./common');
 
 const dict = new Dict();
-attachValidator(dict);
-attachExampleGenerator(dict);
-attachSchemaGenerator(dict);
 
 const examples = {
     // 'Function',
@@ -46,9 +40,6 @@ const examples = {
         1, 2, 10, 11, 0,
         6, 7, 16, 13, 5,
     ],
-    dev: [
-        'apple', 'microsoft', 'google',
-    ],
 };
 
 // Add schema for basic type
@@ -56,7 +47,7 @@ const examples = {
     const createValidator = type => (self, context) => {
         const identifiedType = typeOf(self);
         if (identifiedType !== type) {
-            throw new RavlError(401, `Value must be of type '${type}'`, context);
+            throw new RavlError(`Value must be of type '${type}'`, context);
         }
     };
     // Add schemas for all basic types
@@ -85,7 +76,7 @@ const examples = {
         },
         validator: (self, context) => {
             if (!isValidEmail(self)) {
-                throw new RavlError(401, 'Value is not a valid email', context);
+                throw new RavlError('Value is not a valid email', context);
             }
         },
     };
@@ -102,7 +93,7 @@ const examples = {
         },
         validator: (self, context) => {
             if (!isValidInteger(self)) {
-                throw new RavlError(401, 'Value is not a valid integer', context);
+                throw new RavlError('Value is not a valid integer', context);
             }
         },
     };
@@ -119,22 +110,11 @@ const examples = {
         },
         validator: (self, context) => {
             if (!isValidInteger(self) || self < 0) {
-                throw new RavlError(401, 'Value is not a valid unsigned integer', context);
+                throw new RavlError('Value is not a valid unsigned integer', context);
             }
         },
     };
     dict.put(type, schema);
 }
-{
-    const type = 'dev';
-    const schema = {
-        doc: {
-            name: 'String for Dev',
-            description: 'Loads validator from string',
-            example: examples[type],
-        },
-    };
-    dict.put(type, schema);
-}
 
-module.exports.dict = dict;
+module.exports = dict;

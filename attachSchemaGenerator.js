@@ -22,7 +22,7 @@ const attachSchemaGenerator = (container) => {
         // Else if
         const schema = container.get(type);
         if (isFalsy(schema)) {
-            throw new RavlError(401, 'Type is not defined');
+            throw new RavlError('Type is not defined');
         }
         if (isFalsy(schema.fields)) {
             return undefined;
@@ -44,4 +44,4 @@ const attachSchemaGenerator = (container) => {
     container.getSchema = getSchema; // eslint-disable-line
 };
 
-module.exports.default = attachSchemaGenerator;
+module.exports = attachSchemaGenerator;

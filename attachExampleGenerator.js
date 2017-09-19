@@ -19,7 +19,7 @@ const attachExampleGenerator = (container) => {
         // Else if
         const schema = container.get(type);
         if (isFalsy(schema)) {
-            throw new RavlError(401, 'Type is not defined');
+            throw new RavlError('Type is not defined');
         }
 
         if (isFalsy(schema.fields)) {
@@ -43,4 +43,4 @@ const attachExampleGenerator = (container) => {
     container.getExample = getExample; // eslint-disable-line
 };
 
-module.exports.default = attachExampleGenerator;
+module.exports = attachExampleGenerator;

@@ -1,5 +1,5 @@
 // TRUTHY/FALSY
-const isFalsy = val => (val === undefined || val === null || val !== val);
+const isFalsy = val => (val === undefined || val === null || val !== val); // eslint-disable-line
 const isTruthy = val => !isFalsy(val);
 
 // BASIC TYPES
