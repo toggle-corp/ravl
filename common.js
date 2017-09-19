@@ -42,7 +42,7 @@ const isValidInteger = value => (
   typeOf(value) === 'number' && value % 1 === 0
 );
 
-const getRandomFromList = items => (
+const getRandomFromList = (items = []) => (
   items[Math.floor(Math.random() * items.length)]
 );
 

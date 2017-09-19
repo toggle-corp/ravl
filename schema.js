@@ -13,28 +13,8 @@ const TAB = '    ';
 const ARRAY = 'array';
 const ARRAY_SUFFIXED = 'array.';
 
-class SchemaContainer {
-  constructor() {
-    // create empty schema
-    this.schemas = {};
-  }
-
-  getSchema(type) {
-    return this.schemas[type];
-  }
-
-  hasSchema(type) {
-    return isTruthy(this.schemas[type]);
-  }
-
-  setSchema(type, schema) {
-    if (this.hasSchema(type)) {
-      console.log('WARNING: Overriding existing schema');
-    }
-    this.schemas[type] = schema;
-  }
-
-  validate(object, type, context = type) {
+const attachValidator = (container) => {
+  const validate = (object, type, context = type) => {
     if (isFalsy(type)) {
       throw new RavlError(401, 'Type is not defined', context);
     }
@@ -45,16 +25,16 @@ class SchemaContainer {
         throw new RavlError(401, `Value must be of type ${ARRAY}`, context);
       }
       // Validate as array
-      this.validate(object, ARRAY, context);
+      validate(object, ARRAY, context);
       // Get type of children ie: string after 'array.'
       const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
       // Iterate over the elements of array and validate them
       object.forEach((subObject) => {
-        this.validate(subObject, subType, `${context} > ${ARRAY}`);
+        validate(subObject, subType, `${context} > ${ARRAY}`);
       });
     } else {
       // Get schema
-      const schema = this.getSchema(type);
+      const schema = container.get(type);
       if (isFalsy(schema)) {
         throw new RavlError(401, 'Schema is not defined', context);
       }
@@ -68,7 +48,7 @@ class SchemaContainer {
           if (isSubObjectFalsy && field.required) {
             throw new RavlError(401, `Field '${fieldName}' is required`, context);
           } else if (!isSubObjectFalsy) {
-            this.validate(subObject, field.type, `${context} > ${fieldName}`);
+            validate(subObject, field.type, `${context} > ${fieldName}`);
           }
         });
       }
@@ -86,50 +66,19 @@ class SchemaContainer {
         }
       }
     }
-  }
+  };
+  container.validate = validate;
+};
 
-  getInstance(type) {
-    // If type starts with 'array.'
-    if (type.startsWith(ARRAY_SUFFIXED)) {
-      const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
-      const opArray = [];
-      const count = Math.floor(Math.random() * 10);
-      for (let i = 0; i < count; i++) {
-        opArray.push(this.getInstance(subType));
-      }
-      return opArray;
-    }
-
-    // Else if
-    const schema = this.getSchema(type);
-    if (isFalsy(schema)) {
-      throw new RavlError(401, 'Type is not defined');
-    }
-    if (isFalsy(schema.fields)) {
-      // this means this is a basic type
-      // TODO: check for doc to exits
-      return getRandomFromList(schema.doc.example);
-    }
-
-    const doc = {};
-    Object.keys(schema.fields).forEach((fieldName) => {
-      const field = schema.fields[fieldName];
-      if (!isFalsy(field.required) || Math.random() > 0.1) {
-        const valueForField = this.getInstance(field.type);
-        doc[fieldName] = valueForField;
-      }
-    });
-    return doc;
-  }
-
-  getFormattedSchema(type, level = 0) {
+const attachSchemaGenerator = (container) => {
+  const getSchema = (type, level = 0) => {
     const tabLevel = TAB.repeat(level);
     const tabLevel1 = TAB.repeat(level + 1);
 
     // If type starts with 'array.'
     if (type.startsWith(ARRAY_SUFFIXED)) {
       const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
-      let schemaForSubType = this.getFormattedSchema(subType, level + 1);
+      let schemaForSubType = getSchema(subType, level + 1);
       if (isFalsy(schemaForSubType)) {
         schemaForSubType = `${tabLevel1}'${subType}',`;
       }
@@ -137,7 +86,7 @@ class SchemaContainer {
     }
 
     // Else if
-    const schema = this.getSchema(type);
+    const schema = container.get(type);
     if (isFalsy(schema)) {
       throw new RavlError(401, 'Type is not defined');
     }
@@ -148,7 +97,7 @@ class SchemaContainer {
     let doc = `${tabLevel}{`;
     Object.keys(schema.fields).forEach((fieldName) => {
       const field = schema.fields[fieldName];
-      let schemaForField = this.getFormattedSchema(field.type, level + 1);
+      let schemaForField = getSchema(field.type, level + 1);
       if (isFalsy(schemaForField)) {
         schemaForField = ` '${field.type}'`;
       } else {
@@ -157,14 +106,92 @@ class SchemaContainer {
       doc += `\n${tabLevel1}${fieldName}:${schemaForField},${field.required ? '    // required' : ''}`;
     });
     return `${doc}\n${tabLevel}}`;
+  };
+  container.getSchema = getSchema;
+};
+
+const attachExampleGenerator = (container) => {
+  const getExample = (type) => {
+    // If type starts with 'array.'
+    if (type.startsWith(ARRAY_SUFFIXED)) {
+      const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
+      const opArray = [];
+      const count = Math.floor(Math.random() * 10);
+      for (let i = 0; i < count; i += 1) {
+        opArray.push(getExample(subType));
+      }
+      return opArray;
+    }
+
+    // Else if
+    const schema = container.get(type);
+    if (isFalsy(schema)) {
+      throw new RavlError(401, 'Type is not defined');
+    }
+
+    if (isFalsy(schema.fields)) {
+      // this means this is a basic type
+      // TODO: check for doc to exits
+      return getRandomFromList(schema.doc.example);
+    }
+
+    const doc = {};
+    Object.keys(schema.fields).forEach((fieldName) => {
+      const field = schema.fields[fieldName];
+      if (!isFalsy(field.required) || Math.random() > 0.1) {
+        const valueForField = getExample(field.type);
+        doc[fieldName] = valueForField;
+      }
+    });
+
+
+    return doc;
+  };
+  container.getExample = getExample;
+};
+
+class Dict {
+  constructor() {
+    this.map = {};
   }
 
+  get(type) {
+    const subtypes = type.split(':');
+    let merger = {};
+    subtypes.forEach((subtype) => {
+      const val = this.map[subtype];
+      if (isTruthy(val)) {
+        merger = {
+          doc: { ...merger.doc, ...val.doc },
+          fields: val.fields || merger.fields,
+          validator: val.validator || merger.validator,
+        };
+      }
+    });
+    return merger;
+  }
+
+  has(type) {
+    return isTruthy(this.map[type]);
+  }
+
+  put(type, schema) {
+    if (this.has(type)) {
+      console.warn('Overriding an existing key');
+    }
+    this.map[type] = schema;
+  }
 }
 
-const schemaContainer = new SchemaContainer();
-
+const dict = new Dict();
+attachValidator(dict);
+attachExampleGenerator(dict);
+attachSchemaGenerator(dict);
 
 const examples = {
+  dev: [
+    'apple', 'microsoft', 'google',
+  ],
   boolean: [
     true, false,
   ],
@@ -217,7 +244,7 @@ const examples = {
       },
       validator,
     };
-    schemaContainer.setSchema(type, schema);
+    dict.put(type, schema);
   });
 }
 // Add schema for email
@@ -235,7 +262,7 @@ const examples = {
       }
     },
   };
-  schemaContainer.setSchema(type, schema);
+  dict.put(type, schema);
 }
 // Add schema for int
 {
@@ -252,7 +279,7 @@ const examples = {
       }
     },
   };
-  schemaContainer.setSchema(type, schema);
+  dict.put(type, schema);
 }
 // Add schema for uint
 {
@@ -269,7 +296,18 @@ const examples = {
       }
     },
   };
-  schemaContainer.setSchema(type, schema);
+  dict.put(type, schema);
+}
+{
+  const type = 'dev';
+  const schema = {
+    doc: {
+      name: 'String for Dev',
+      description: 'Loads validator from string',
+      example: examples[type],
+    },
+  };
+  dict.put(type, schema);
 }
 
-module.exports.schemaContainer = schemaContainer;
+module.exports.dict = dict;

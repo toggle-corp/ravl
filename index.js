@@ -1,7 +1,7 @@
 // ERRORS
 const { RavlError } = require('./error');
 const { isFalsy, typeOf } = require('./common');
-const { schemaContainer } = require('./schema');
+const { dict } = require('./schema');
 
 // Adding user defined schema
 {
@@ -31,7 +31,7 @@ const { schemaContainer } = require('./schema');
       }
     },
   };
-  schemaContainer.setSchema(name, schema);
+  dict.put(name, schema);
 }
 {
   const name = 'officer';
@@ -43,29 +43,29 @@ const { schemaContainer } = require('./schema');
     fields: {
       id: { type: 'uint', required: true },
       name: { type: 'string', required: false },
-      wards: { type: 'array.string', required: true },
+      wards: { type: 'array.string:dev', required: true },
     },
   };
-  schemaContainer.setSchema(name, schema);
+  dict.put(name, schema);
 }
 
 // VALIDATION EXAMPLE
 try {
-  schemaContainer.validate('hari', 'string');
-  schemaContainer.validate(false, 'boolean');
-  schemaContainer.validate(12121, 'number');
-  schemaContainer.validate(12121.021, 'number');
-  schemaContainer.validate(-12121.021, 'number');
-  schemaContainer.validate([[[1, 2]]], 'array');
-  schemaContainer.validate([[[1, 2]]], 'array.array');
-  schemaContainer.validate([[[1, 2]]], 'array.array.array');
-  schemaContainer.validate([[[1, 2]]], 'array.array.array.number');
-  schemaContainer.validate(-1, 'int');
-  schemaContainer.validate(1, 'uint');
-  schemaContainer.validate('shyam@gmail.com', 'email');
-  schemaContainer.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
-  schemaContainer.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
-  schemaContainer.validate({ id: 2, name: 'kaski', wards: ['hari', 'shyam'] }, 'officer');
+  dict.validate('hari', 'string');
+  dict.validate(false, 'boolean');
+  dict.validate(12121, 'number');
+  dict.validate(12121.021, 'number');
+  dict.validate(-12121.021, 'number');
+  dict.validate([[[1, 2]]], 'array');
+  dict.validate([[[1, 2]]], 'array.array');
+  dict.validate([[[1, 2]]], 'array.array.array');
+  dict.validate([[[1, 2]]], 'array.array.array.number');
+  dict.validate(-1, 'int');
+  dict.validate(1, 'uint');
+  dict.validate('shyam@gmail.com', 'email');
+  dict.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
+  dict.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
+  dict.validate({ id: 2, name: 'kaski', wards: ['hari', 'shyam'] }, 'officer');
 } catch (ex) {
   if (ex instanceof RavlError) {
     console.log(ex.message);
@@ -84,9 +84,9 @@ const elems = [
 ];
 let op = '';
 elems.forEach((elem) => {
-  const schema = schemaContainer.getSchema(elem.type);
-  const schemaEx = schemaContainer.getFormattedSchema(elem.type);
-  const schemaEg = JSON.stringify(schemaContainer.getInstance(elem.type), null, 2);
+  const schema = dict.get(elem.type);
+  const schemaEx = dict.getSchema(elem.type);
+  const schemaEg = JSON.stringify(dict.getExample(elem.type), null, 2);
 
   if (schema && schema.doc) {
     // Title
