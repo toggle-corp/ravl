@@ -20,6 +20,7 @@ attachSchemaGenerator(dict);
             description: 'Loads validator from string',
             example: ['apple', 'microsoft', 'google', 'amazon'],
         },
+        extends: 'string',
     };
     dict.put(type, schema);
 }
@@ -62,7 +63,7 @@ attachSchemaGenerator(dict);
         fields: {
             id: { type: 'uint', required: true },
             name: { type: 'string', required: false },
-            wards: { type: 'array.string:company', required: true },
+            wards: { type: 'array.companyName', required: true },
         },
     };
     dict.put(name, schema);
@@ -99,6 +100,7 @@ const elems = [
     { type: 'uint', level: 1, example: true },
     { type: 'email', level: 1, example: true },
     { type: 'district', level: 2 },
+    { type: 'companyName', level: 2 },
     { type: 'officer', level: 3 },
 ];
 let op = '';

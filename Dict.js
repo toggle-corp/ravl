@@ -1,29 +1,29 @@
 const { isTruthy } = require('./common');
 
+const isEmptyObject = obj => (Object.keys(obj).length === 0);
+
 class Dict {
     constructor() {
         this.map = {};
     }
 
     get(type) {
-        const subtypes = type.split(':');
-        let merger = {};
-        subtypes.forEach((subtype) => {
-            const val = this.map[subtype];
-            if (isTruthy(val)) {
-                merger = {
-                    doc: { ...merger.doc, ...val.doc },
-                    fields: { ...merger.fields, ...val.fields },
-                    validator: val.validator || merger.validator,
-                };
-            }
-        });
-        // set merger.fields to undefined if it is empty
-        // NOTE: Other code check if it if undefined or not
-        if (Object.keys(merger.fields).length === 0) {
-            merger.fields = undefined;
+        let result = this.map[type];
+        if (result.extends) {
+            const subResult = this.get(result.extends);
+            result = {
+                // TODO: may be this is opposite
+                doc: { ...subResult.doc, ...result.doc },
+                fields: { ...subResult.fields, ...result.fields },
+                validator: result.validator || subResult.validator,
+            };
         }
-        return merger;
+        // set fields to undefined if it is an empty object
+        // Other code check if it if undefined or not
+        if (result.fields && isEmptyObject(result.fields)) {
+            result.fields = undefined;
+        }
+        return result;
     }
 
     has(type) {
