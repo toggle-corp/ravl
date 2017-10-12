@@ -13,11 +13,16 @@ class Dict {
             if (isTruthy(val)) {
                 merger = {
                     doc: { ...merger.doc, ...val.doc },
-                    fields: val.fields || merger.fields,
+                    fields: { ...merger.fields, ...val.fields },
                     validator: val.validator || merger.validator,
                 };
             }
         });
+        // set merger.fields to undefined if it is empty
+        // NOTE: Other code check if it if undefined or not
+        if (Object.keys(merger.fields).length === 0) {
+            merger.fields = undefined;
+        }
         return merger;
     }
 
