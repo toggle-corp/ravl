@@ -1,4 +1,4 @@
-const { isTruthy } = require('./common');
+const { isTruthy, isFalsy } = require('./common');
 
 const isEmptyObject = obj => (Object.keys(obj).length === 0);
 
@@ -9,8 +9,15 @@ class Dict {
 
     get(type) {
         let result = this.map[type];
+        if (!this.has(type)) {
+            // console.warn(`RAVL.Dict: key '${type}' not found`);
+            return undefined;
+        }
         if (result.extends) {
             const subResult = this.get(result.extends);
+            if (isFalsy(subResult)) {
+                return undefined;
+            }
             result = {
                 // TODO: may be this is opposite
                 doc: { ...subResult.doc, ...result.doc },
@@ -32,7 +39,7 @@ class Dict {
 
     put(type, schema) {
         if (this.has(type)) {
-            console.warn('Overriding an existing key');
+            console.warn(`RAVL.Dict: Overriding schema for key '${type}'`);
         }
         this.map[type] = schema;
     }

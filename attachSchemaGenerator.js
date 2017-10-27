@@ -22,7 +22,7 @@ const attachSchemaGenerator = (container) => {
         // Else if
         const schema = container.get(type);
         if (isFalsy(schema)) {
-            throw new RavlError('Type is not defined');
+            throw new RavlError(`'${type}' type is not defined`);
         }
         if (isFalsy(schema.fields)) {
             return undefined;

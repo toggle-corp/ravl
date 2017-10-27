@@ -14,7 +14,7 @@ class ExtendableError extends Error {
 // Validation layer error
 class RavlError extends ExtendableError {
     constructor(description, context) {
-        super(`DESCRIPTION: ${description}\nCONTEXT: ${context}`);
+        super(`\ndescription: ${description}\ncontext: ${context || 'n/a'}`);
         this.description = description;
         this.context = context;
     }
