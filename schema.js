@@ -118,3 +118,4 @@ const examples = {
 }
 
 module.exports = dict;
+module.exports.typeOf = typeOf;
