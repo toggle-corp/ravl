@@ -1,4 +1,5 @@
-const { isTruthy, isFalsy } = require('./common');
+const { isTruthy, isFalsy, typeOf } = require('./common');
+const { RavlError } = require('./error');
 
 const isEmptyObject = obj => (Object.keys(obj).length === 0);
 
@@ -41,6 +42,22 @@ class Dict {
         if (this.has(type)) {
             console.warn(`RAVL.Dict: Overriding schema for key '${type}'`);
         }
+        if (isFalsy(schema) || typeOf(schema) !== 'object') {
+            throw RavlError('Schema is not valid');
+        }
+        if (isTruthy(schema.extends) && typeOf(schema.extends) !== 'string') {
+            throw RavlError('Schema:extends is not valid');
+        }
+        if (isTruthy(schema.doc) && typeOf(schema.doc) !== 'object') {
+            throw RavlError('Schema:doc is not valid');
+        }
+        if (isTruthy(schema.fields) && typeOf(schema.fields) !== 'object') {
+            throw RavlError('Schema:fields is not valid');
+        }
+        if (isTruthy(schema.validator) && typeOf(schema.validator) !== 'function') {
+            throw RavlError('Schema:validator is not valid');
+        }
+
         this.map[type] = schema;
     }
 }
