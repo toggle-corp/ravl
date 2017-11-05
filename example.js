@@ -5,6 +5,7 @@ const dict = require('./schema');
 const attachValidator = require('./attachValidator');
 const attachExampleGenerator = require('./attachExampleGenerator');
 const attachSchemaGenerator = require('./attachSchemaGenerator');
+const generateDoc = require('./generateDoc');
 
 // ATTACHING BEHAVIORS
 attachValidator(dict);
@@ -95,49 +96,16 @@ try {
 }
 
 // FORMATTED_SCHEMA & INSTANCE EXAMPLE
-const elems = [
+
+// we can have 5 levels
+const entries = [
     { type: 'int', level: 1, example: true },
     { type: 'uint', level: 1, example: true },
     { type: 'email', level: 1, example: true },
     { type: 'district', level: 2 },
     { type: 'companyName', level: 2 },
-    { type: 'officer', level: 3 },
+    { type: 'officer', level: 3, example: true },
 ];
-let op = '';
-elems.forEach((elem) => {
-    const schema = dict.get(elem.type);
-    const schemaEx = dict.getSchema(elem.type);
-    const schemaEg = JSON.stringify(dict.getExample(elem.type), null, 2);
 
-    if (schema && schema.doc) {
-        // Title
-        op += `${'#'.repeat(elem.level)} ${schema.doc.name}\n`;
-        // Description
-        if (schema.doc.description) {
-            op += `${schema.doc.description}\n`;
-        }
-        // Formatted Schema
-        if (schemaEx) {
-            op += `###### Schema\n\`\`\`javascript\n${schemaEx}\n\`\`\`\n`;
-        }
-        // Dynamic examples
-        if (schemaEg) {
-            op += `###### Example\n\`\`\`javascript\n${schemaEg}\n\`\`\`\n`;
-        }
-        /*
-        // Static examples
-      const surroundBacktick = a => `\`${a}\``;
-      if (elem.example && schema.doc.example) {
-        console.log(`Example: ${schema.doc.example.map(surroundBacktick).join(', ')}`);
-      }
-      */
-        // Note
-        if (schema.doc.note) {
-            op += `> ${schema.doc.note}\n`;
-        }
-        op += '\n';
-    } else {
-        // for arrays
-    }
-});
-console.log(op);
+const doc = generateDoc(dict, entries);
+console.log(doc);
