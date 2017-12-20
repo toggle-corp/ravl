@@ -1,5 +1,7 @@
 // TRUTHY/FALSY
-const isFalsy = val => (val === undefined || val === null || val !== val); // eslint-disable-line
+const isFalsy = val => (
+    val === undefined || val === null || Number.isNaN(val)
+);
 const isTruthy = val => !isFalsy(val);
 
 // BASIC TYPES
@@ -46,6 +48,8 @@ const getRandomFromList = (items = []) => (
     items[Math.floor(Math.random() * items.length)]
 );
 
+const isEmptyObject = obj => (Object.keys(obj).length === 0);
+
 module.exports.isFalsy = isFalsy;
 module.exports.isTruthy = isTruthy;
 module.exports.basicTypes = basicTypes;
@@ -53,3 +57,4 @@ module.exports.typeOf = typeOf;
 module.exports.isValidEmail = isValidEmail;
 module.exports.isValidInteger = isValidInteger;
 module.exports.getRandomFromList = getRandomFromList;
+module.exports.isEmptyObject = isEmptyObject;

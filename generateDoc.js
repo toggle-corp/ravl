@@ -9,6 +9,7 @@ function generateDoc(dict, entries) {
         }
 
         // Title
+        // NOTE: we can have 5 levels
         doc += `${'#'.repeat(entry.level)} ${schema.doc.name}\n`;
         // Description
         if (schema.doc.description) {

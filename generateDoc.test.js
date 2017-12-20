@@ -1,16 +1,13 @@
-// ERRORS
 const { RavlError } = require('./error');
 const { isFalsy, typeOf } = require('./common');
-const dict = require('./schema');
-const attachValidator = require('./attachValidator');
+const dictionary = require('./schema');
 const attachExampleGenerator = require('./attachExampleGenerator');
 const attachSchemaGenerator = require('./attachSchemaGenerator');
 const generateDoc = require('./generateDoc');
 
 // ATTACHING BEHAVIORS
-attachValidator(dict);
-attachExampleGenerator(dict);
-attachSchemaGenerator(dict);
+attachExampleGenerator(dictionary, 1, false);
+attachSchemaGenerator(dictionary);
 
 // ATTACHING USER DEFINED SCHEMAS
 {
@@ -23,7 +20,7 @@ attachSchemaGenerator(dict);
         },
         extends: 'string',
     };
-    dict.put(type, schema);
+    dictionary.put(type, schema);
 }
 {
     const name = 'district';
@@ -52,7 +49,7 @@ attachSchemaGenerator(dict);
             }
         },
     };
-    dict.put(name, schema);
+    dictionary.put(name, schema);
 }
 {
     const name = 'officer';
@@ -67,37 +64,10 @@ attachSchemaGenerator(dict);
             wards: { type: 'array.companyName', required: true },
         },
     };
-    dict.put(name, schema);
-}
-
-// VALIDATION EXAMPLE
-try {
-    dict.validate('hari', 'string');
-    dict.validate(false, 'boolean');
-    dict.validate(12121, 'number');
-    dict.validate(12121.021, 'number');
-    dict.validate(-12121.021, 'number');
-    dict.validate([[[1, 2]]], 'array');
-    dict.validate([[[1, 2]]], 'array.array');
-    dict.validate([[[1, 2]]], 'array.array.array');
-    dict.validate([[[1, 2]]], 'array.array.array.number');
-    dict.validate(-1, 'int');
-    dict.validate(1, 'uint');
-    dict.validate('shyam@gmail.com', 'email');
-    dict.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
-    dict.validate({ id: 12, name: 'kaski', description: 'Best district' }, 'district');
-    dict.validate({ id: 2, name: 'kaski', wards: ['hari', 'shyam'] }, 'officer');
-} catch (ex) {
-    if (ex instanceof RavlError) {
-        console.log(ex.message);
-    } else {
-        throw ex;
-    }
+    dictionary.put(name, schema);
 }
 
 // FORMATTED_SCHEMA & INSTANCE EXAMPLE
-
-// we can have 5 levels
 const entries = [
     { type: 'int', level: 1, example: true },
     { type: 'uint', level: 1, example: true },
@@ -107,5 +77,78 @@ const entries = [
     { type: 'officer', level: 3, example: true },
 ];
 
-const doc = generateDoc(dict, entries);
-console.log(doc);
+test('should create markdown', () => {
+    const op = generateDoc(dictionary, entries);
+    const ex = `# Integer
+Basic type which denotes a number without decimal parts.
+###### Example
+\`\`\`javascript
+1
+\`\`\`
+
+# Unsigned Integer
+Basic type which denotes a positive integer.
+###### Example
+\`\`\`javascript
+1
+\`\`\`
+
+# Email
+Basic type which denotes a valid email.
+###### Example
+\`\`\`javascript
+"johndoe@email.com"
+\`\`\`
+
+## District
+User type containing information related  a district.
+###### Schema
+\`\`\`javascript
+{
+    id: 'uint',    // required
+    index: 'number',
+    name: 'string',    // required
+    description: 'string',
+    officerAssigned:
+    {
+        id: 'uint',    // required
+        name: 'string',
+        wards:
+        [
+            'companyName',
+        ],    // required
+    },
+}
+\`\`\`
+> A district can be assigned with one more officer if required.
+
+## Company names
+Loads validator from string
+
+### District Officer
+User type containing information related an officer.
+###### Schema
+\`\`\`javascript
+{
+    id: 'uint',    // required
+    name: 'string',
+    wards:
+    [
+        'companyName',
+    ],    // required
+}
+\`\`\`
+###### Example
+\`\`\`javascript
+{
+  "id": 1,
+  "name": "ram",
+  "wards": [
+    "apple"
+  ]
+}
+\`\`\`
+
+`;
+    expect(op).toEqual(ex);
+});

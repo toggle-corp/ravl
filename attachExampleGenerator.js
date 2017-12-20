@@ -3,13 +3,13 @@ const { isFalsy, getRandomFromList } = require('./common');
 
 const ARRAY_SUFFIXED = 'array.';
 
-const attachExampleGenerator = (container) => {
+const attachExampleGenerator = (container, exampleCount = 1, random = false) => {
     const getExample = (type) => {
         // If type starts with 'array.'
         if (type.startsWith(ARRAY_SUFFIXED)) {
             const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
             const opArray = [];
-            const count = Math.floor(Math.random() * 10);
+            const count = (random ? Math.floor(Math.random()) : 1) * exampleCount;
             for (let i = 0; i < count; i += 1) {
                 opArray.push(getExample(subType));
             }
@@ -25,7 +25,7 @@ const attachExampleGenerator = (container) => {
         if (isFalsy(schema.fields)) {
             // this means this is a basic type
             // TODO: check for doc to exits
-            return getRandomFromList(schema.doc.example);
+            return random ? getRandomFromList(schema.doc.example) : schema.doc.example[0];
         }
 
         const doc = {};
