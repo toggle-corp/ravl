@@ -139,3 +139,66 @@ test('should not be valid', () => {
         () => dict.validate(undefined, 'array.string'),
     ).toThrow();
 });
+
+test('should work', () => {
+    {
+        const name = 'dbentity';
+        const schema = {
+            doc: {
+                name: 'Database Entity',
+                description: 'Defines all the attributes common to db entities',
+            },
+            fields: {
+                createdAt: { type: 'string', required: true }, // date
+                createdBy: { type: 'uint' },
+                createdByName: { type: 'string' },
+                id: { type: 'uint', required: true },
+                modifiedAt: { type: 'string', required: true }, // date
+                modifiedBy: { type: 'uint' },
+                modifiedByName: { type: 'string' },
+                versionId: { type: 'uint', required: true },
+            },
+        };
+        dict.put(name, schema);
+    }
+    {
+        const name = 'galleryFile';
+        const schema = {
+            doc: {
+                name: 'Gallery file',
+                description: 'Standard gallery file',
+            },
+            extends: 'dbentity',
+            fields: {
+                file: { type: 'string', required: true }, // url
+                isPublic: { type: 'boolean' },
+                metaData: { type: 'object' },
+                mimeType: { type: 'string' }, // mime
+                permittedUserGroups: { type: 'array.uint' },
+                permittedUsers: { type: 'array.uint' },
+                title: { type: 'string', required: true },
+            },
+        };
+        dict.put(name, schema);
+    }
+
+    const obj = {
+        createdAt: '2018-01-10T07:14:18.150751Z',
+        createdBy: 4,
+        createdByName: 'Navin',
+        file: 'http://localhost:8000/media/gallery/unsupervised_ANN.pdf',
+        id: 1245,
+        isPublic: true,
+        metaData: null,
+        mimeType: 'application/pdf',
+        modifiedAt: '2018-01-10T07:14:18.155046Z',
+        modifiedBy: 4,
+        modifiedByName: 'Navin',
+        permittedUserGroups: [],
+        permittedUsers: [4],
+        title: 'unsupervised ANN.pdf',
+        versionId: 1,
+    };
+
+    dict.validate(obj, 'galleryFile');
+});
