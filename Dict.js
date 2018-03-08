@@ -54,6 +54,10 @@ class Dict {
         }
         this.map[type] = schema;
     }
+
+    validate(obj, name) {
+        console.warn(this.map, `Couldn't validated object for type ${name}`);
+    }
 }
 
 module.exports.default = Dict;
