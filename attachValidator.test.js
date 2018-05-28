@@ -177,6 +177,7 @@ test('should work', () => {
                 permittedUserGroups: { type: 'array.uint' },
                 permittedUsers: { type: 'array.uint' },
                 title: { type: 'string', required: true },
+                '*': { type: 'boolean', required: true },
             },
         };
         dict.put(name, schema);
@@ -198,7 +199,37 @@ test('should work', () => {
         permittedUsers: [4],
         title: 'unsupervised ANN.pdf',
         versionId: 1,
+
+        anything: false,
+        anythingElse: true,
     };
 
-    dict.validate(obj, 'galleryFile');
+    expect(
+        () => dict.validate(obj, 'galleryFile'),
+    ).not.toThrow();
+
+    const obj2 = {
+        createdAt: '2018-01-10T07:14:18.150751Z',
+        createdBy: 4,
+        createdByName: 'Navin',
+        file: 'http://localhost:8000/media/gallery/unsupervised_ANN.pdf',
+        id: 1245,
+        isPublic: true,
+        metaData: null,
+        mimeType: 'application/pdf',
+        modifiedAt: '2018-01-10T07:14:18.155046Z',
+        modifiedBy: 4,
+        modifiedByName: 'Navin',
+        permittedUserGroups: [],
+        permittedUsers: [4],
+        title: 'unsupervised ANN.pdf',
+        versionId: 1,
+
+        anything: false,
+        anythingElse: 'sneaky string',
+    };
+
+    expect(
+        () => dict.validate(obj2, 'galleryFile'),
+    ).toThrow();
 });
