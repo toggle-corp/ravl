@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Rest Api Validation Layer",
   "main": "build/index.js",
+  "typings": "build/src/index.d.ts",
   "scripts": {
     "test": "jest",
     "build": "webpack --config webpack.dev.config.js --mode=development",
