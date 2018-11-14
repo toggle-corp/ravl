@@ -54,7 +54,7 @@ const ARRAY_SUFFIXED = 'array.';
 const TAB = '    ';
 
 export default class Dict {
-    schemata: { [key: string]: Schema }
+    private schemata: { [key: string]: Schema }
 
     constructor() {
         this.schemata = {};
@@ -100,14 +100,13 @@ export default class Dict {
         return Object.keys(this.schemata);
     }
 
-    // Private
-    validateField = (subObject: unknown, fieldName: string, field: Field, context: string) => {
-            const isSubObjectFalsy = isFalsy(subObject);
-            if (!isSubObjectFalsy) {
-                this.validate(subObject, field.type, `${context} > ${fieldName}`);
-            } else if (field.required){
-                throw new RavlError(`Field '${fieldName}' is required`, context);
-            }
+    private validateField = (subObject: unknown, fieldName: string, field: Field, context: string) => {
+        const isSubObjectFalsy = isFalsy(subObject);
+        if (!isSubObjectFalsy) {
+            this.validate(subObject, field.type, `${context} > ${fieldName}`);
+        } else if (field.required){
+            throw new RavlError(`Field '${fieldName}' is required`, context);
+        }
     }
 
     validate = (obj: unknown, type: string, context:string = type) => {
