@@ -34,6 +34,10 @@ interface BaseSchema {
     fields?: Fields;
 }
 
+interface DictConfig {
+    warning?: boolean,
+}
+
 export type Schema = BaseSchema | ExtensionSchema;
 
 export function isExtensionSchema(schema: Schema): schema is ExtensionSchema {
@@ -55,16 +59,18 @@ const TAB = '    ';
 
 export default class Dict {
     private schemata: { [key: string]: Schema }
+    private config: DictConfig
 
-    constructor() {
+    constructor(config: DictConfig = {}) {
         this.schemata = {};
+        this.config = config;
     }
 
     has = (type: string) => isTruthy(this.schemata[type]);
 
     put = (type: string, schema: Schema) => {
-        if (this.has(type)) {
-            console.warn(`Overriding schema for key '${type}'`);
+        if (this.has(type) && this.config.warning) {
+            console.warn(`Warning: Overriding schema for key '${type}'`);
         }
         if (isExtensionSchema(schema) && !this.schemata[schema.extends]) {
             throw new RavlError(`Subtype '${schema.extends}' not found`);
@@ -150,7 +156,7 @@ export default class Dict {
                         const field = fields['*'];
                         this.validateField(subObject, fieldName, field, context);
                     });
-                } else {
+                } else if (this.config.warning) {
                     const extraFieldNames = extraFields.map(([fieldName]) => fieldName);
                     console.warn(`Warning: Extra field${extraFields.length > 1 ? 's' : ''} present: '${extraFieldNames}'\nContext: ${context}`);
                 }
