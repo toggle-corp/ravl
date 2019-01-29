@@ -31,6 +31,7 @@ const examples: { [key: string]: any[] } = {
         1, 2, 10, 11, 0,
         6, 7, 16, 13, 5,
     ],
+    unknown: [],
 };
 
 // Add schema for basic types
@@ -51,6 +52,16 @@ const entries: Schema[] = basicTypes.map((basicType) => {
     };
     return schema;
 });
+
+// Add schema for unknown
+entries.push({
+    doc: {
+        name: 'unknown',
+        description: 'Unknown',
+        example: examples.unknown,
+    },
+    validator: () => {},
+})
 
 // Add schema for email
 entries.push({
