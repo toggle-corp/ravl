@@ -6,7 +6,7 @@ import {
 import RavlError from './RavlError';
 
 interface Field {
-    type: string,
+    type: string | Schema,
     required?: boolean,
 };
 
@@ -78,10 +78,15 @@ export default class Dict {
         this.schemata[type] = schema;
     }
 
-    get = (type: string): BaseSchema => {
-        let result = this.schemata[type];
-        if (!this.has(type)) {
-            throw new RavlError(`Key '${type}' not found`);
+    get = (type: string | Schema): BaseSchema => {
+        let result;
+        if (typeof type === 'string') {
+            if (!this.has(type)) {
+                throw new RavlError(`Key '${type}' not found`);
+            }
+            result = this.schemata[type];
+        } else {
+            result = type;
         }
 
         if (!isExtensionSchema(result)) {
@@ -115,12 +120,14 @@ export default class Dict {
         }
     }
 
-    validate = (obj: unknown, type: string, context:string = type) => {
+    validate = (obj: unknown, type: string | BaseSchema, myContext?: string) => {
+        const context = myContext || (typeof type === 'string') ? type as string : 'unknown';
+
         if (isFalsy(obj)) {
             throw new RavlError(`Value must be defined`, context);
         }
         // NOTE: for array
-        if (type.startsWith(ARRAY_SUFFIXED)) {
+        if (typeof type === 'string' && type.startsWith(ARRAY_SUFFIXED)) {
             const objArr = obj as unknown[];
             // Validate as array
             this.validate(obj, ARRAY, context);
@@ -172,12 +179,12 @@ export default class Dict {
         }
     }
 
-    getSchema = (type: string, level: number = 0): string | undefined => {
+    getSchema = (type: string | Schema, level: number = 0): string | undefined => {
         const tabLevel = TAB.repeat(level);
         const tabLevel1 = TAB.repeat(level + 1);
 
         // If type starts with 'array.'
-        if (type.startsWith(ARRAY_SUFFIXED)) {
+        if (typeof type === 'string' && type.startsWith(ARRAY_SUFFIXED)) {
             const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
             let schemaForSubType = this.getSchema(subType, level + 1);
             if (isFalsy(schemaForSubType)) {
@@ -194,6 +201,7 @@ export default class Dict {
 
         let doc = `${tabLevel}{`;
         Object.entries(schema.fields).forEach(([ fieldName, field ]) => {
+            // FIXME: check if field.type is string
             let schemaForField = this.getSchema(field.type, level + 1);
             if (isFalsy(schemaForField)) {
                 schemaForField = ` '${field.type}'`;
@@ -204,9 +212,9 @@ export default class Dict {
         return `${doc}\n${tabLevel}}`;
     };
 
-    getExample = (type: string, exampleCount: number = 1, randomize: boolean = false): any => {
+    getExample = (type: string | Schema, exampleCount: number = 1, randomize: boolean = false): any => {
         // If type starts with 'array.'
-        if (type.startsWith(ARRAY_SUFFIXED)) {
+        if (typeof type === 'string' && type.startsWith(ARRAY_SUFFIXED)) {
             const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
             const opArray = [];
             const count = (randomize ? Math.floor(Math.random()) : 1) * exampleCount;
