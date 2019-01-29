@@ -5,10 +5,15 @@ import {
 } from './utils';
 import RavlError from './RavlError';
 
-interface Field {
+interface FieldObject {
     type: string | Schema,
     required?: boolean,
 };
+interface FieldArray {
+    arrayType: string | Schema,
+    required?: boolean,
+}
+type Field = FieldObject | FieldArray;
 
 interface Fields {
     [key: string]: Field
@@ -29,6 +34,7 @@ interface ExtensionSchema {
 }
 
 interface BaseSchema {
+    multiple?: boolean,
     doc: Doc,
     validator?(object: unknown, context: string): void,
     fields?: Fields;
@@ -43,6 +49,11 @@ export type Schema = BaseSchema | ExtensionSchema;
 export function isExtensionSchema(schema: Schema): schema is ExtensionSchema {
     return (schema as ExtensionSchema).extends !== undefined;
 }
+
+export function isFieldArray(field: Field): field is FieldArray {
+    return (field as FieldArray).arrayType !== undefined;
+}
+
 
 function merge<T extends object>(foo: T | undefined, bar : T | undefined): T | undefined {
     if (isFalsy(foo)) {
@@ -111,31 +122,57 @@ export default class Dict {
         return Object.keys(this.schemata);
     }
 
+    private static isString = (type: unknown): type is string => (
+        typeof type === 'string'
+    )
+
+    private static isTypeForArray = (type: string): type is string => (
+        type.startsWith(ARRAY_SUFFIXED)
+    )
+
+    private static getContext = (myContext: string | undefined, type: string | BaseSchema) => {
+        if (myContext) {
+            return myContext;
+        }
+        if (Dict.isString(type)) {
+            return type;
+        }
+        return 'unknown'
+    }
+
     private validateField = (subObject: unknown, fieldName: string, field: Field, context: string) => {
         const isSubObjectFalsy = isFalsy(subObject);
         if (!isSubObjectFalsy) {
-            this.validate(subObject, field.type, `${context} > ${fieldName}`);
+            if (isFieldArray(field)) {
+                // FIXME: override as array
+                this.validate(subObject, field.arrayType, true, `${context} > ${fieldName}`);
+            } else {
+                this.validate(subObject, field.type, false, `${context} > ${fieldName}`);
+            }
         } else if (field.required){
             throw new RavlError(`Field '${fieldName}' is required`, context);
         }
     }
 
-    validate = (obj: unknown, type: string | BaseSchema, myContext?: string) => {
-        const context = myContext || (typeof type === 'string') ? type as string : 'unknown';
+    validate = (obj: unknown, type: string | BaseSchema, forceArrayCheck?: boolean, myContext?: string) => {
+        const context = Dict.getContext(myContext, type);
 
         if (isFalsy(obj)) {
             throw new RavlError(`Value must be defined`, context);
         }
+
         // NOTE: for array
-        if (typeof type === 'string' && type.startsWith(ARRAY_SUFFIXED)) {
+        if (forceArrayCheck || Dict.isString(type) && Dict.isTypeForArray(type)) {
             const objArr = obj as unknown[];
             // Validate as array
-            this.validate(obj, ARRAY, context);
+            this.validate(obj, ARRAY, false, context);
             // Get type of children ie: string after 'array.'
-            const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
+            const subType = Dict.isString(type) && Dict.isTypeForArray(type)
+                ? type.substring(ARRAY_SUFFIXED.length, type.length)
+                : type;
             // Iterate over the elements of array and validate them
-            objArr.forEach((subObject: unknown) => {
-                this.validate(subObject, subType, `${context} > ${ARRAY}`);
+            objArr.forEach((subObject: unknown, index: number) => {
+                this.validate(subObject, subType, false, `${context} > ${index}`);
             });
             return;
         }
@@ -179,13 +216,15 @@ export default class Dict {
         }
     }
 
-    getSchema = (type: string | Schema, level: number = 0): string | undefined => {
+    getSchema = (type: string | Schema, level: number = 0, forceArrayCheck: boolean = false): string | undefined => {
         const tabLevel = TAB.repeat(level);
         const tabLevel1 = TAB.repeat(level + 1);
 
         // If type starts with 'array.'
-        if (typeof type === 'string' && type.startsWith(ARRAY_SUFFIXED)) {
-            const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
+        if (forceArrayCheck || Dict.isString(type) && Dict.isTypeForArray(type)) {
+            const subType = Dict.isString(type) && Dict.isTypeForArray(type)
+                ? type.substring(ARRAY_SUFFIXED.length, type.length)
+                : type;
             let schemaForSubType = this.getSchema(subType, level + 1);
             if (isFalsy(schemaForSubType)) {
                 schemaForSubType = `${tabLevel1}'${subType}',`;
@@ -202,9 +241,17 @@ export default class Dict {
         let doc = `${tabLevel}{`;
         Object.entries(schema.fields).forEach(([ fieldName, field ]) => {
             // FIXME: check if field.type is string
-            let schemaForField = this.getSchema(field.type, level + 1);
+            let fieldType;
+            let schemaForField;
+            if (isFieldArray(field)) {
+                fieldType = field.arrayType;
+                schemaForField = this.getSchema(fieldType, level + 1, true);
+            } else {
+                fieldType = field.type;
+                schemaForField = this.getSchema(fieldType, level + 1, false);
+            }
             if (isFalsy(schemaForField)) {
-                schemaForField = ` '${field.type}'`;
+                schemaForField = ` '${fieldType}'`;
             } else {
                 schemaForField = `\n${schemaForField}`;
             }
@@ -212,10 +259,12 @@ export default class Dict {
         return `${doc}\n${tabLevel}}`;
     };
 
-    getExample = (type: string | Schema, exampleCount: number = 1, randomize: boolean = false): any => {
+    getExample = (type: string | Schema, exampleCount: number = 1, randomize: boolean = false, forceArrayCheck: boolean = false): any => {
         // If type starts with 'array.'
-        if (typeof type === 'string' && type.startsWith(ARRAY_SUFFIXED)) {
-            const subType = type.substring(ARRAY_SUFFIXED.length, type.length);
+        if (forceArrayCheck || Dict.isString(type) && Dict.isTypeForArray(type)) {
+            const subType = Dict.isString(type) && Dict.isTypeForArray(type)
+                ? type.substring(ARRAY_SUFFIXED.length, type.length)
+                : type;
             const opArray = [];
             const count = (randomize ? Math.floor(Math.random()) : 1) * exampleCount;
             for (let i = 0; i < count; i += 1) {
@@ -247,7 +296,15 @@ export default class Dict {
         Object.keys(fields).forEach((fieldName) => {
             const field = fields[fieldName];
             if (!isFalsy(field.required) || Math.random() > 0.1) {
-                const valueForField = this.getExample(field.type);
+
+                let valueForField;
+                if (isFieldArray(field)) {
+                    // set false
+                    valueForField = this.getExample(field.arrayType, 1, false, true);
+                } else {
+                    valueForField = this.getExample(field.type, 1, false, false);
+                }
+
                 result[fieldName] = valueForField;
             }
         });

@@ -71,11 +71,30 @@ test('schema of district', () => {
     });
 });
 
-
 test('schema of officer', () => {
     expect(dict.getExample('officer', 1, false)).toEqual({
         id: 1,
         name: 'ram',
         wards: ['apple'],
     });
+});
+
+test('inline schema', () => {
+    const schema = {
+        doc: {
+            name: 'officer',
+            description: 'District Officer',
+        },
+        fields: {
+            id: { type: 'uint', required: true },
+            name: { type: 'string', required: false },
+            age: { arrayType: 'int', required: true },
+        },
+    };
+    const value = {
+        id: 1,
+        name: 'ram',
+        age: [1],
+    };
+    expect(dict.getExample(schema, 1, false)).toEqual(value);
 });

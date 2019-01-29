@@ -198,3 +198,91 @@ test('should be invalid', () => {
         );
     }).toThrow(RavlError);
 });
+
+test('should be valid for advanced types', () => {
+    const inlineSchema = {
+        doc: {
+            name: 'person',
+            description: 'Inline person schema',
+        },
+        fields: {
+            name: { type: 'string', required: true },
+            age: { type: 'uint', required: true },
+            children: {
+                arrayType: {
+                    doc: {
+                        name: 'child',
+                        description: 'Inline child schema',
+                    },
+                    fields: {
+                        name: { type: 'string', required: true },
+                        age: { type: 'uint', required: true },
+                    },
+                },
+                required: true,
+            },
+            favoriteNumbers: { arrayType: 'number', required: true },
+        },
+    };
+
+    expect(() => {
+        dict.validate(
+            {
+                name: 'hari',
+                age: 12,
+                children: [
+                    {
+                        name: 'hari',
+                        age: 12,
+                    },
+                    {
+                        name: 'shyam',
+                        age: 11,
+                    },
+                ],
+                favoriteNumbers: [1, 2, 3, 4],
+            },
+            inlineSchema,
+        );
+    }).not.toThrow();
+    expect(() => {
+        dict.validate(
+            {
+                name: 'hari',
+                age: 12,
+                children: [
+                    {
+                        name: 'hari',
+                        age: '12',
+                    },
+                    {
+                        name: 'shyam',
+                        age: 11,
+                    },
+                ],
+                favoriteNumbers: [1, 2, 3, 4],
+            },
+            inlineSchema,
+        );
+    }).toThrow();
+    expect(() => {
+        dict.validate(
+            {
+                name: 'hari',
+                age: 12,
+                children: [
+                    {
+                        name: 'hari',
+                        age: 12,
+                    },
+                    {
+                        name: 'shyam',
+                        age: 11,
+                    },
+                ],
+                favoriteNumbers: ['hari'],
+            },
+            inlineSchema,
+        );
+    }).toThrow();
+});

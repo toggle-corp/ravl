@@ -9,6 +9,16 @@ const newEntries: Schema[] = [
     ...entries,
     {
         doc: {
+            name: 'ward',
+            description: 'Ward',
+            example: ['one', 'two'],
+        },
+        fields: {
+            name: { type: 'string', required: true },
+        }
+    },
+    {
+        doc: {
             name: 'companyName',
             description: 'Company Name',
             example: ['apple', 'microsoft', 'google', 'amazon'],
@@ -92,4 +102,76 @@ test('schema of officer', () => {
     ],    // required
 }`;
     expect(dict.getSchema('officer')).toEqual(officer);
+});
+
+test('inline schema', () => {
+    const schema = {
+        doc: {
+            name: 'officer',
+            description: 'District Officer',
+        },
+        fields: {
+            id: { type: 'uint', required: true },
+            name: { type: 'string', required: false },
+            wards: { type: 'array.companyName', required: true },
+            anotherWards: { arrayType: 'companyName', required: true },
+            anotherAnotherWards: { arrayType: 'ward', required: true },
+        },
+    };
+    const officer = `{
+    id: 'uint',    // required
+    name: 'string',
+    wards:
+    [
+        'companyName',
+    ],    // required
+    anotherWards:
+    [
+        'companyName',
+    ],    // required
+    anotherAnotherWards:
+    [
+        {
+            name: 'string',    // required
+        }
+    ],    // required
+}`;
+    expect(dict.getSchema(schema)).toEqual(officer);
+});
+
+test('inline schema', () => {
+    const schema = {
+        doc: {
+            name: 'officer',
+            description: 'District Officer',
+        },
+        fields: {
+            id: { type: 'uint', required: true },
+            name: { type: 'string', required: false },
+            anotherWards: {
+                arrayType: {
+                    doc: {
+                        name: 'ward',
+                        description: 'Ward',
+                        example: ['one', 'two'],
+                    },
+                    fields: {
+                        name: { type: 'string', required: true },
+                    }
+                },
+                required: true,
+            },
+        },
+    };
+    const officer = `{
+    id: 'uint',    // required
+    name: 'string',
+    anotherWards:
+    [
+        {
+            name: 'string',    // required
+        }
+    ],    // required
+}`;
+    expect(dict.getSchema(schema)).toEqual(officer);
 });
