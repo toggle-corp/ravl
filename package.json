@@ -1,6 +1,6 @@
 {
   "name": "@togglecorp/ravl",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Rest Api Validation Layer",
   "main": "build/index.js",
   "typings": "build/src/index.d.ts",
@@ -19,8 +19,7 @@
     "url": "https://github.com/toggle-corp/ravl/issues"
   },
   "homepage": "https://github.com/toggle-corp/ravl#readme",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^23.3.1",
     "awesome-typescript-loader": "^5.2.0",
