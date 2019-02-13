@@ -2,12 +2,16 @@
   "name": "@togglecorp/ravl",
   "version": "1.2.0",
   "description": "Rest Api Validation Layer",
+  "files": "build",
   "main": "build/index.js",
+  "module": "build/index.es.js",
   "typings": "build/src/index.d.ts",
   "scripts": {
+    "prepare": "rollup -c",
+    "build": "rollup -c",
+    "watch": "rollup -cw",
     "test": "jest",
-    "build": "webpack --config webpack.dev.config.js --mode=development",
-    "prepare": "webpack --config webpack.prod.config.js --mode=production"
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -22,15 +26,13 @@
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^23.3.1",
-    "awesome-typescript-loader": "^5.2.0",
-    "circular-dependency-plugin": "^5.0.2",
     "jest": "^23.5.0",
+    "rollup": "^1.1.2",
+    "rollup-plugin-typescript2": "^0.19.2",
     "ts-jest": "^23.1.4",
+    "ts-loader": "^5.3.3",
     "ts-node": "^7.0.1",
     "tslint-eslint-rules": "^5.4.0",
-    "typescript": "^3.0.3",
-    "typescript-language-server": "^0.3.0",
-    "webpack": "^4.17.1",
-    "webpack-cli": "^3.1.0"
+    "typescript": "^3.0.3"
   }
 }
