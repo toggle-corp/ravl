@@ -1,4 +1,5 @@
-import { isFalsy } from './utils';
+import { isNotDefined } from '@togglecorp/fujs';
+
 import RavlError from './RavlError';
 import Dict from './Dict';
 
@@ -17,7 +18,7 @@ test('valid extends', () => {
 
     const typeZero = 'something-here';
     const validatorZero = (self: any) => {
-        if (isFalsy(self.description)) {
+        if (isNotDefined(self.description)) {
             throw new RavlError('Whaat?');
         }
     };
@@ -37,7 +38,7 @@ test('valid extends', () => {
 
     const type = 'companyName';
     const validator = (self: any) => {
-        if (isFalsy(self.name)) {
+        if (isNotDefined(self.name)) {
             throw new RavlError('Whaat?');
         }
     };
@@ -76,7 +77,7 @@ test('no fields extends', () => {
     expect(() => dict.get(type)).toThrow();
 
     const validator = (self: any) => {
-        if (isFalsy(self.name)) {
+        if (isNotDefined(self.name)) {
             throw new RavlError('Whaat?');
         }
     };

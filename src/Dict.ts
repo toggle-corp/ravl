@@ -1,8 +1,5 @@
-import {
-    isTruthy,
-    isFalsy,
-    getRandomFromList,
-} from './utils';
+import { getRandomFromList, isDefined, isNotDefined } from '@togglecorp/fujs';
+
 import RavlError from './RavlError';
 
 interface FieldObject {
@@ -56,9 +53,9 @@ export function isFieldArray(field: Field): field is FieldArray {
 
 
 function merge<T extends object>(foo: T | undefined, bar : T | undefined): T | undefined {
-    if (isFalsy(foo)) {
+    if (isNotDefined(foo)) {
         return bar;
-    } else if (isFalsy(bar)) {
+    } else if (isNotDefined(bar)) {
         return foo;
     }
     return { ...foo as object, ...bar as object } as T;
@@ -77,7 +74,7 @@ export default class Dict {
         this.config = config;
     }
 
-    has = (type: string) => isTruthy(this.schemata[type]);
+    has = (type: string) => isDefined(this.schemata[type]);
 
     put = (type: string, schema: Schema) => {
         if (this.has(type) && this.config.warning) {
@@ -106,7 +103,7 @@ export default class Dict {
 
         let subResult = this.get(result.extends);
 
-        if (isFalsy(subResult)) {
+        if (isNotDefined(subResult)) {
             throw new RavlError(`Subtype '${result.extends}' not found`);
         }
 
@@ -141,7 +138,7 @@ export default class Dict {
     }
 
     private validateField = (subObject: unknown, fieldName: string, field: Field, context: string) => {
-        const isSubObjectFalsy = isFalsy(subObject);
+        const isSubObjectFalsy = isNotDefined(subObject);
         if (!isSubObjectFalsy) {
             if (isFieldArray(field)) {
                 // FIXME: override as array
@@ -157,7 +154,7 @@ export default class Dict {
     validate = (obj: unknown, type: string | BaseSchema, forceArrayCheck?: boolean, myContext?: string) => {
         const context = Dict.getContext(myContext, type);
 
-        if (isFalsy(obj)) {
+        if (isNotDefined(obj)) {
             throw new RavlError(`Value must be defined`, context);
         }
 
@@ -182,7 +179,7 @@ export default class Dict {
         const { fields, validator } = schema;
 
         // NOTE: fields with be truthy for object
-        if (isTruthy(fields)) {
+        if (isDefined(fields)) {
             const objObj = obj as { [key: string]: unknown };
             // Iterate over fields and validate them
             Object.entries(fields).forEach(([ fieldName, field ]) => {
@@ -192,9 +189,9 @@ export default class Dict {
                 }
             });
 
-            const extraFields = Object.entries(objObj).filter(([ fieldName ]) => isFalsy(fields[fieldName]));
+            const extraFields = Object.entries(objObj).filter(([ fieldName ]) => isNotDefined(fields[fieldName]));
             if (extraFields.length > 0) {
-                if (isTruthy(fields['*'])) {
+                if (isDefined(fields['*'])) {
                     // iterate over remaining object keys and validate
                     extraFields.forEach(([fieldName, subObject]) => {
                         const field = fields['*'];
@@ -210,7 +207,7 @@ export default class Dict {
         // NOTE: validation is defined for every basic type
         // TODO: Should we move validator before checking fields?
         // Run validation function on the object
-        if (isTruthy(validator)) {
+        if (isDefined(validator)) {
             // run validation hook
             validator(obj, context);
         }
@@ -226,7 +223,7 @@ export default class Dict {
                 ? type.substring(ARRAY_SUFFIXED.length, type.length)
                 : type;
             let schemaForSubType = this.getSchema(subType, level + 1);
-            if (isFalsy(schemaForSubType)) {
+            if (isNotDefined(schemaForSubType)) {
                 schemaForSubType = `${tabLevel1}'${subType}',`;
             }
             return `${tabLevel}[\n${schemaForSubType}\n${tabLevel}]`;
@@ -234,7 +231,7 @@ export default class Dict {
 
         // else
         const schema = this.get(type);
-        if (isFalsy(schema.fields)) {
+        if (isNotDefined(schema.fields)) {
             return undefined;
         }
 
@@ -250,7 +247,7 @@ export default class Dict {
                 fieldType = field.type;
                 schemaForField = this.getSchema(fieldType, level + 1, false);
             }
-            if (isFalsy(schemaForField)) {
+            if (isNotDefined(schemaForField)) {
                 schemaForField = ` '${fieldType}'`;
             } else {
                 schemaForField = `\n${schemaForField}`;
@@ -275,7 +272,7 @@ export default class Dict {
 
         // Else if
         const schema = this.get(type);
-        if (isFalsy(schema)) {
+        if (isNotDefined(schema)) {
             throw new RavlError(`'${type}' type is not defined`);
         }
         const {
@@ -286,7 +283,7 @@ export default class Dict {
         } = schema;
 
         // chek if it is basic type
-        if (isFalsy(fields)) {
+        if (isNotDefined(fields)) {
             return randomize
                 ? getRandomFromList(example)
                 : example[0];
@@ -295,7 +292,7 @@ export default class Dict {
         const result: any = {};
         Object.keys(fields).forEach((fieldName) => {
             const field = fields[fieldName];
-            if (!isFalsy(field.required) || Math.random() > 0.1) {
+            if (!isNotDefined(field.required) || Math.random() > 0.1) {
 
                 let valueForField;
                 if (isFieldArray(field)) {

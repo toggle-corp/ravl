@@ -1,5 +1,6 @@
+import { isNotDefined, typeOf } from '@togglecorp/fujs';
+
 import RavlError from './RavlError';
-import { isFalsy, typeOf } from './utils';
 import Dict, { Schema } from './Dict';
 import entries from './entries';
 
@@ -40,7 +41,7 @@ const newEntries: Schema[] = [
             officerAssigned: { type: 'officer', required: false },
         },
         validator: (self: { description?: any }, context: string) => {
-            if (isFalsy(self.description)) {
+            if (isNotDefined(self.description)) {
                 return;
             }
             if (typeOf(self.description) !== 'string') {

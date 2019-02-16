@@ -1,11 +1,12 @@
-import { Schema } from './Dict';
-import RavlError from './RavlError';
 import {
+    isValidEmail,
+    isInteger,
     basicTypes,
     typeOf,
-    isValidEmail,
-    isValidInteger,
-} from './utils';
+} from '@togglecorp/fujs';
+
+import { Schema } from './Dict';
+import RavlError from './RavlError';
 
 const examples: { [key: string]: any[] } = {
     boolean: [
@@ -46,6 +47,7 @@ const entries: Schema[] = basicTypes.map((basicType) => {
         validator: (self: unknown, context: string) => {
             const identifiedType = typeOf(self);
             if (identifiedType !== type) {
+                console.warn(type, identifiedType);
                 throw new RavlError(`Value must be of type '${type}'`, context);
             }
         },
@@ -71,7 +73,7 @@ entries.push({
         example: examples.email,
     },
     validator: (self: unknown, context: string) => {
-        if (!isValidEmail(self)) {
+        if (typeof self !== 'string' || !isValidEmail(self)) {
             throw new RavlError('Value is not a valid email', context);
         }
     },
@@ -84,7 +86,7 @@ entries.push({
         example: examples.int,
     },
     validator: (self: unknown, context: string) => {
-        if (!isValidInteger(self)) {
+        if (!isInteger(self)) {
             throw new RavlError('Value is not a valid integer', context);
         }
     },
@@ -97,7 +99,7 @@ entries.push({
         example: examples.uint,
     },
     validator: (self: unknown, context: string) => {
-        if (!isValidInteger(self) || self < 0) {
+        if (!isInteger(self) || self < 0) {
             throw new RavlError('Value is not a valid unsigned integer', context);
         }
     },
