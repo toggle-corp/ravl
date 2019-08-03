@@ -1,40 +1,40 @@
 {
-  "name": "@togglecorp/ravl",
-  "version": "1.2.2",
-  "description": "Rest Api Validation Layer",
-  "files": "build",
-  "main": "build/index.js",
-  "module": "build/index.es.js",
-  "typings": "build/src/index.d.ts",
-  "scripts": {
-    "prepare": "rollup -c",
-    "build": "rollup -c",
-    "watch": "rollup -cw",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/toggle-corp/ravl.git"
-  },
-  "author": "tnagorra",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/toggle-corp/ravl/issues"
-  },
-  "homepage": "https://github.com/toggle-corp/ravl#readme",
-  "dependencies": {
-    "@togglecorp/fujs": "^1.2.1"
-  },
-  "devDependencies": {
-    "@types/jest": "^23.3.1",
-    "jest": "^23.5.0",
-    "rollup": "^1.1.2",
-    "rollup-plugin-typescript2": "^0.19.2",
-    "ts-jest": "^23.1.4",
-    "ts-loader": "^5.3.3",
-    "ts-node": "^7.0.1",
-    "tslint-eslint-rules": "^5.4.0",
-    "typescript": "^3.0.3"
-  }
+    "name": "@togglecorp/ravl",
+    "version": "1.2.2",
+    "description": "Rest Api Validation Layer",
+    "files": "build",
+    "main": "build/index.js",
+    "module": "build/index.es.js",
+    "typings": "build/src/index.d.ts",
+    "scripts": {
+        "prepare": "rollup -c",
+        "build": "rollup -c",
+        "watch": "rollup -cw",
+        "test": "jest",
+        "test:coverage": "jest --coverage"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/toggle-corp/ravl.git"
+    },
+    "author": "tnagorra",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/toggle-corp/ravl/issues"
+    },
+    "homepage": "https://github.com/toggle-corp/ravl#readme",
+    "dependencies": {
+        "@togglecorp/fujs": "^1.8.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^23.3.14",
+        "jest": "^23.6.0",
+        "rollup": "^1.18.0",
+        "rollup-plugin-typescript2": "^0.19.3",
+        "ts-jest": "^23.10.5",
+        "ts-loader": "^5.4.5",
+        "ts-node": "^7.0.1",
+        "tslint-eslint-rules": "^5.4.0",
+        "typescript": "^3.5.3"
+    }
 }
