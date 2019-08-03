@@ -39,11 +39,9 @@ const examples: { [key: string]: any[] } = {
 const entries: Schema[] = basicTypes.map((basicType) => {
     const type = basicType.toLowerCase();
     const schema: Schema = {
-        doc: {
-            name: type,
-            description: `Basic ${type}`,
-            example: examples[type],
-        },
+        name: type,
+        description: `Basic ${type}`,
+        example: examples[type],
         validator: (self: unknown, context: string) => {
             const identifiedType = typeOf(self);
             if (identifiedType !== type) {
@@ -57,21 +55,17 @@ const entries: Schema[] = basicTypes.map((basicType) => {
 
 // Add schema for unknown
 entries.push({
-    doc: {
-        name: 'unknown',
-        description: 'Unknown',
-        example: examples.unknown,
-    },
+    name: 'unknown',
+    description: 'Unknown',
+    example: examples.unknown,
     validator: () => {},
 })
 
 // Add schema for email
 entries.push({
-    doc: {
-        name: 'email',
-        description: 'Email',
-        example: examples.email,
-    },
+    name: 'email',
+    description: 'Email',
+    example: examples.email,
     validator: (self: unknown, context: string) => {
         if (typeof self !== 'string' || !isValidEmail(self)) {
             throw new RavlError('Value is not a valid email', context);
@@ -80,11 +74,9 @@ entries.push({
 })
 // Add schema for int
 entries.push({
-    doc: {
-        name: 'int',
-        description: 'Integer',
-        example: examples.int,
-    },
+    name: 'int',
+    description: 'Integer',
+    example: examples.int,
     validator: (self: unknown, context: string) => {
         if (!isInteger(self)) {
             throw new RavlError('Value is not a valid integer', context);
@@ -93,11 +85,9 @@ entries.push({
 });
 // Add schema for uint
 entries.push({
-    doc: {
-        name: 'uint',
-        description: 'Unsigned Integer',
-        example: examples.uint,
-    },
+    name: 'uint',
+    description: 'Unsigned Integer',
+    example: examples.uint,
     validator: (self: unknown, context: string) => {
         if (!isInteger(self) || self < 0) {
             throw new RavlError('Value is not a valid unsigned integer', context);

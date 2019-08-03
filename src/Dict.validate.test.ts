@@ -9,18 +9,14 @@ const dict = new Dict();
 const newEntries: Schema[] = [
     ...entries,
     {
-        doc: {
-            name: 'companyName',
-            description: 'Company Name',
-            example: ['apple', 'microsoft', 'google', 'amazon'],
-        },
+        name: 'companyName',
+        description: 'Company Name',
+        example: ['apple', 'microsoft', 'google', 'amazon'],
         extends: 'string',
     },
     {
-        doc: {
-            name: 'officer',
-            description: 'District Officer',
-        },
+        name: 'officer',
+        description: 'District Officer',
         fields: {
             id: { type: 'uint', required: true },
             name: { type: 'string', required: false },
@@ -28,11 +24,9 @@ const newEntries: Schema[] = [
         },
     },
     {
-        doc: {
-            name: 'district',
-            description: 'Discrict',
-            note: 'A district can be assigned with one more officer if required.',
-        },
+        name: 'district',
+        description: 'Discrict',
+        note: 'A district can be assigned with one more officer if required.',
         fields: {
             id: { type: 'uint', required: true },
             index: { type: 'number', required: false },
@@ -53,10 +47,8 @@ const newEntries: Schema[] = [
         },
     },
     {
-        doc: {
-            name: 'dbentity',
-            description: 'Database Entity',
-        },
+        name: 'dbentity',
+        description: 'Database Entity',
         fields: {
             createdAt: { type: 'string', required: true }, // date
             createdBy: { type: 'uint' },
@@ -69,10 +61,8 @@ const newEntries: Schema[] = [
         },
     },
     {
-        doc: {
-            name: 'galleryFile',
-            description: 'Standard gallery file',
-        },
+        name: 'galleryFile',
+        description: 'Standard gallery file',
         extends: 'dbentity',
         fields: {
             file: { type: 'string', required: true }, // url
@@ -88,7 +78,7 @@ const newEntries: Schema[] = [
 ];
 
 newEntries.forEach((entry) => {
-    dict.put(entry.doc.name, entry);
+    dict.put(entry.name, entry);
 });
 
 test('should be valid', () => {
@@ -204,19 +194,15 @@ test('should be invalid', () => {
 
 test('should be valid for advanced types', () => {
     const inlineSchema = {
-        doc: {
-            name: 'person',
-            description: 'Inline person schema',
-        },
+        name: 'person',
+        description: 'Inline person schema',
         fields: {
             name: { type: 'string', required: true },
             age: { type: 'uint', required: true },
             children: {
                 arrayType: {
-                    doc: {
-                        name: 'child',
-                        description: 'Inline child schema',
-                    },
+                    name: 'child',
+                    description: 'Inline child schema',
                     fields: {
                         name: { type: 'string', required: true },
                         age: { type: 'uint', required: true },
@@ -227,6 +213,33 @@ test('should be valid for advanced types', () => {
             favoriteNumbers: { arrayType: 'number', required: true },
         },
     };
+
+    expect(() => {
+        dict.validate(
+            {
+                createdAt: '2018-01-10T07:14:18.150751Z',
+                createdBy: 4,
+                createdByName: 'Navin',
+                file: 'http://localhost:8000/media/gallery/unsupervised_ANN.pdf',
+                id: 1245,
+                isPublic: true,
+                metaData: null,
+                mimeType: 'application/pdf',
+                modifiedAt: '2018-01-10T07:14:18.155046Z',
+                modifiedBy: 4,
+                modifiedByName: 'Navin',
+                permittedUserGroups: [],
+                permittedUsers: [4],
+                title: 'unsupervised ANN.pdf',
+                versionId: 1,
+
+                anything: false,
+                anythingElse: true,
+                badThing: 'hari',
+            },
+            'galleryFile',
+        );
+    }).toThrow();
 
     expect(() => {
         dict.validate(

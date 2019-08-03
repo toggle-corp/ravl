@@ -16,23 +16,22 @@ interface Fields {
     [key: string]: Field
 }
 
-interface Doc {
+interface ExtensionSchema {
+    extends: string,
     name: string,
     description?: string,
     example?: string[],
     note?: string,
-};
-
-interface ExtensionSchema {
-    extends: string,
-    doc: Doc,
     validator?(object: unknown, context: string): void,
     fields?: Fields;
 }
 
 interface BaseSchema {
     multiple?: boolean,
-    doc: Doc,
+    name: string,
+    description?: string,
+    example?: string[],
+    note?: string,
     validator?(object: unknown, context: string): void,
     fields?: Fields;
 }
@@ -109,7 +108,11 @@ export default class Dict {
 
 
         return {
-            doc: {...subResult.doc, ...result.doc},
+            name: result.name || subResult.name,
+            description: result.description || subResult.description,
+            example: result.example || subResult.example,
+            note: result.note || subResult.note,
+
             fields: merge<Fields>(subResult.fields, result.fields),
             validator: result.validator || subResult.validator,
         };
@@ -235,7 +238,7 @@ export default class Dict {
             return undefined;
         }
 
-        let doc = `${tabLevel}{`;
+        let str = `${tabLevel}{`;
         Object.entries(schema.fields).forEach(([ fieldName, field ]) => {
             // FIXME: check if field.type is string
             let fieldType;
@@ -252,8 +255,8 @@ export default class Dict {
             } else {
                 schemaForField = `\n${schemaForField}`;
             }
-            doc += `\n${tabLevel1}${fieldName}:${schemaForField},${field.required ? `${TAB}// required` : ''}`; });
-        return `${doc}\n${tabLevel}}`;
+            str += `\n${tabLevel1}${fieldName}:${schemaForField},${field.required ? `${TAB}// required` : ''}`; });
+        return `${str}\n${tabLevel}}`;
     };
 
     getExample = (type: string | Schema, exampleCount: number = 1, randomize: boolean = false, forceArrayCheck: boolean = false): any => {
@@ -277,9 +280,7 @@ export default class Dict {
         }
         const {
             fields,
-            doc: {
-                example = [],
-            },
+            example = [],
         } = schema;
 
         // chek if it is basic type
