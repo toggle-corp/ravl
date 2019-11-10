@@ -6,8 +6,8 @@ import Dict from './Dict';
 test('should check Dict.has', () => {
     const dict = new Dict();
 
-    dict.put('base32', { doc: { name: 'base32' }, fields: {}});
-    dict.put('extension32', { doc: { name: 'extension32' }, extends: 'base32' });
+    dict.put('base32', { name: 'base32', fields: {}});
+    dict.put('extension32', { name: 'extension32', extends: 'base32' });
     expect(dict.has('base32')).toBeTruthy();
     expect(dict.has('extension32')).toBeTruthy();
     expect(dict.has('base64')).toBeFalsy();
@@ -23,11 +23,9 @@ test('valid extends', () => {
         }
     };
     const schemaZero = {
-        doc: {
-            name: 'Something',
-            description: 'This has something',
-            example: ['something'],
-        },
+        name: 'Something',
+        description: 'This has something',
+        example: ['something'],
         fields: {
             id: { type: 'uint', required: true },
             description: { type: 'string', required: false },
@@ -43,11 +41,9 @@ test('valid extends', () => {
         }
     };
     const schema = {
-        doc: {
-            name: 'Company names',
-            description: 'Loads validator from string',
-            example: ['apple', 'microsoft', 'google', 'amazon'],
-        },
+        name: 'Company names',
+        description: 'Loads validator from string',
+        example: ['apple', 'microsoft', 'google', 'amazon'],
         fields: {
             description: { type: 'string', required: true },
         },
@@ -57,11 +53,9 @@ test('valid extends', () => {
     dict.put(type, schema);
 
     const op = {
-        doc: {
-            name: 'Company names',
-            description: 'Loads validator from string',
-            example: ['apple', 'microsoft', 'google', 'amazon'],
-        },
+        name: 'Company names',
+        description: 'Loads validator from string',
+        example: ['apple', 'microsoft', 'google', 'amazon'],
         fields: {
             id: { type: 'uint', required: true },
             description: { type: 'string', required: true },
@@ -83,11 +77,9 @@ test('no fields extends', () => {
     };
     const type = 'companyName';
     const schema = {
-        doc: {
-            name: 'Company names',
-            description: 'Loads validator from string',
-            example: ['apple', 'microsoft', 'google', 'amazon'],
-        },
+        name: 'Company names',
+        description: 'Loads validator from string',
+        example: ['apple', 'microsoft', 'google', 'amazon'],
         fields: {},
         extends: 'something-not-here',
         validator,

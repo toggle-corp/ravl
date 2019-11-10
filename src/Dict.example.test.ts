@@ -9,18 +9,14 @@ const dict = new Dict();
 const newEntries: Schema[] = [
     ...entries,
     {
-        doc: {
-            name: 'companyName',
-            description: 'Company Name',
-            example: ['apple', 'microsoft', 'google', 'amazon'],
-        },
+        name: 'companyName',
+        description: 'Company Name',
+        example: ['apple', 'microsoft', 'google', 'amazon'],
         extends: 'string',
     },
     {
-        doc: {
-            name: 'officer',
-            description: 'District Officer',
-        },
+        name: 'officer',
+        description: 'District Officer',
         fields: {
             id: { type: 'uint', required: true },
             name: { type: 'string', required: false },
@@ -28,11 +24,9 @@ const newEntries: Schema[] = [
         },
     },
     {
-        doc: {
-            name: 'district',
-            description: 'Discrict',
-            note: 'A district can be assigned with one more officer if required.',
-        },
+        name: 'district',
+        description: 'Discrict',
+        note: 'A district can be assigned with one more officer if required.',
         fields: {
             id: { type: 'uint', required: true },
             index: { type: 'number', required: false },
@@ -55,7 +49,7 @@ const newEntries: Schema[] = [
 ];
 
 newEntries.forEach((entry) => {
-    dict.put(entry.doc.name, entry);
+    dict.put(entry.name, entry);
 });
 
 test('schema of companyName', () => {
@@ -82,10 +76,8 @@ test('schema of officer', () => {
 
 test('inline schema', () => {
     const schema = {
-        doc: {
-            name: 'officer',
-            description: 'District Officer',
-        },
+        name: 'officer',
+        description: 'District Officer',
         fields: {
             id: { type: 'uint', required: true },
             name: { type: 'string', required: false },
